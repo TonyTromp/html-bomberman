@@ -1,0 +1,288 @@
+<html>
+  <head>
+     <meta name=vs_targetSchema content="http://schemas.microsoft.com/intellisense/ie5">
+     <SCRIPT language=JavaScript src="js/animation.js"></SCRIPT>
+     <SCRIPT language=JavaScript src="js/gameobject.js"></SCRIPT>
+
+<script language="Javascript">
+  if( document.captureEvents ) {
+    //non IE
+    if( Event.KEYDOWN ) {
+        //NS 4, NS 6+, Mozilla 0.9+
+        document.captureEvents( Event.KEYDOWN );
+    }
+  }
+  document.onkeydown = keyDown;
+
+  /* level objects */
+  var level_layout;
+  var courtyard_frameset = new animation('courtyard_frameset');
+  var game_object;
+  var player1_object;
+
+  courtyard_frameset.addFrame(204 , 0); // Default
+  courtyard_frameset.addFrame(17  , 0); // Solid steel 
+  courtyard_frameset.addFrame(34  , 0); // Solid Wall
+  courtyard_frameset.addFrame(51  , 0); // Brick
+    
+  var LEVEL_OBJ_DEFAULT      = 0;
+  var LEVEL_OBJ_SOLID_STEEL  = 1;
+  var LEVEL_OBJ_SOLID_WALL   = 2;
+  var LEVEL_OBJ_BRICK        = 3;
+
+  var PLAYER_ANIMATION_UP    = 'player_up_anim';
+  var PLAYER_ANIMATION_DOWN  = 'player_down_anim';
+  var PLAYER_ANIMATION_LEFT  = 'player_left_anim';
+  var PLAYER_ANIMATION_RIGHT = 'player_right_anim';
+
+  var player_up_anim    = new animation(PLAYER_ANIMATION_UP);
+  var player_down_anim  = new animation(PLAYER_ANIMATION_DOWN);
+  var player_left_anim  = new animation(PLAYER_ANIMATION_LEFT);
+  var player_right_anim = new animation(PLAYER_ANIMATION_RIGHT);
+
+  /* Player up animation frames   */
+  player_up_anim.addFrame(95  , 0);
+  player_up_anim.addFrame(114 , 0);
+  player_up_anim.addFrame(133 , 0);
+  player_up_anim.addFrame(114 , 0);
+  player_up_anim.addFrame(95  , 0);
+  player_up_anim.addFrame(323 , 25);
+  player_up_anim.addFrame(304 , 25);
+  player_up_anim.addFrame(323 , 25);
+ 
+  /* Player down animation frames */
+  player_down_anim.addFrame(19 , 0);
+  player_down_anim.addFrame(38 , 0);
+  player_down_anim.addFrame(57 , 0);  
+  player_down_anim.addFrame(38 , 0);
+  player_down_anim.addFrame(19 , 0);  
+  player_down_anim.addFrame(399 , 25);
+  player_down_anim.addFrame(380 , 25);
+  player_down_anim.addFrame(399 , 25);
+  
+  /* Player left animation frames */
+  player_left_anim.addFrame(171 , 25);
+  player_left_anim.addFrame(190 , 25);
+  player_left_anim.addFrame(209 , 25);
+  player_left_anim.addFrame(190 , 25);
+  player_left_anim.addFrame(228 , 25);
+  player_left_anim.addFrame(247 , 25);
+  player_left_anim.addFrame(266 , 25);
+  player_left_anim.addFrame(247 , 25);
+     
+  /* Player right */
+  player_right_anim.addFrame(171 , 0);
+  player_right_anim.addFrame(190 , 0);
+  player_right_anim.addFrame(209 , 0);  
+  player_right_anim.addFrame(228 , 0);
+  player_right_anim.addFrame(247 , 0);
+  player_right_anim.addFrame(266 , 0);
+          
+
+    /*
+    game_sprites.addFrame(0  , 0);
+    game_sprites.addFrame(68  , 0);
+    game_sprites.addFrame(85  , 0);
+    game_sprites.addFrame(102  , 0);
+    game_sprites.addFrame(102  , 0);
+    game_sprites.addFrame(119  , 0);
+    game_sprites.addFrame(136  , 0);
+    game_sprites.addFrame(153  , 0);
+    game_sprites.addFrame(170  , 0);
+    game_sprites.addFrame(187  , 0);
+    
+    game_sprites.addFrame(221  , 0);
+    game_sprites.addFrame(238  , 0);
+    game_sprites.addFrame(255  , 0);
+    game_sprites.addFrame(272  , 0);
+    game_sprites.addFrame(289  , 0);
+    game_sprites.addFrame(306  , 0);
+    game_sprites.addFrame(323  , 0);
+    game_sprites.addFrame(340  , 0);
+    game_sprites.addFrame(357  , 0);
+    game_sprites.addFrame(374  , 0);
+    game_sprites.addFrame(391  , 0);
+    game_sprites.addFrame(408  , 0);
+    game_sprites.addFrame(425, 0);
+    game_sprites.addFrame(442, 0);
+    game_sprites.addFrame(459, 0);
+    game_sprites.addFrame(476, 0);
+    game_sprites.addFrame(493, 0);
+    game_sprites.addFrame(510, 0);
+    game_sprites.addFrame(527, 0);
+    game_sprites.addFrame(544, 0);
+    game_sprites.addFrame(561, 0);
+    game_sprites.addFrame(578, 0);
+    */
+
+   /*
+   ** Keyboard event handler
+   */
+   function keyDown(keyPressed) 
+   {
+     // IE, Mozilla compatibility
+     var keyIndex = (keyPressed) ? keyPressed.which : event.keyCode; 
+     var letterpressed = String.fromCharCode(keyIndex).toLowerCase(); 
+     
+     var speed = 500;
+     var step_x = 16;
+     var step_y = 16;
+     
+     var destionation_x;
+     var destionation_y;
+
+     var player_animation_index;
+     // If not currently moving 
+     if (!player1_object.IsMoving) {
+       switch(keyIndex){
+           case 39:
+           player_animation_index = PLAYER_ANIMATION_RIGHT;
+           destionation_x = player1_object.x + step_x;
+           destionation_y = player1_object.y;
+           break;
+       case 37: 
+           player_animation_index = PLAYER_ANIMATION_LEFT;
+           destionation_x = player1_object.x-step_x;
+           destionation_y = player1_object.y;
+           break;
+       case 38:
+           player_animation_index = PLAYER_ANIMATION_UP;
+           destionation_x = player1_object.x;
+           destionation_y = player1_object.y-step_y;
+           break;
+       case 40:
+           player_animation_index = PLAYER_ANIMATION_DOWN;
+           destionation_x = player1_object.x;
+           destionation_y = player1_object.y+step_y;
+           break;
+       default:
+           break;
+       }
+       
+      var destObject = LevelSpriteIndexFromFromPoint(destionation_x , destionation_y );
+      if ( destObject==LEVEL_OBJ_DEFAULT) {
+         player1_object.PlayAnimation(player_animation_index);
+         player1_object.SmoothMove( destionation_x , destionation_y , speed);
+      }
+
+     }
+
+    if (letterpressed == "h") 
+    {self.location.href="index.htm";} 
+   }
+   
+  /*
+  ** Other events
+  */
+  this.afterMove  = event_afterMove;
+  this.beforeMove = event_afterMove;
+  function event_afterMove(e)
+  {
+     player1_object.StopAllAnimations('player1_element');
+  }
+  
+  var GameMatrix = new Array();
+
+  GameMatrix[0]  = new Array( '1' , '-' , 'x' , '-' , '-' , 'x' , '-' , '-' , 'x' , '-' , 'x' , 'x' , '-' );
+  GameMatrix[1]  = new Array( '-' , 'o' , '-' , 'o' , 'x' , 'o' , 'x' , 'x' , '-' , '-' , '-' , '-' , 'x' );
+  GameMatrix[2]  = new Array( '-' , 'x' , 'x' , 'x' , 'x' , 'x' , '-' , '-' , '-' , '-' , 'x' , '-' , 'x' );
+  GameMatrix[3]  = new Array( 'x' , 'o' , '-' , 'o' , 'x' , 'o' , 'x' , '-' , 'x' , 'x' , '-' , '-' , 'x' );
+  GameMatrix[4]  = new Array( '-' , 'x' , 'x' , 'x' , 'x' , 'x' , '-' , '-' , '-' , '-' , '-' , 'x' , 'x' );
+  GameMatrix[5]  = new Array( '-' , 'o' , '-' , 'o' , 'x' , 'o' , 'x' , 'x' , '-' , '-' , 'x' , '-' , '-' );
+  GameMatrix[6]  = new Array( 'x' , 'x' , 'x' , 'x' , 'x' , 'x' , '-' , '-' , 'x' , '-' , '-' , '-' , 'x' );
+  GameMatrix[7]  = new Array( 'x' , 'o' , '-' , 'o' , 'x' , 'o' , '-' , '-' , '-' , '-' , '-' , 'x' , '-' );
+  GameMatrix[8]  = new Array( 'x' , 'x' , '-' , '-' , 'x' , 'x' , 'x' , 'x' , '-' , 'x' , 'x' , '-' , 'x' );
+  GameMatrix[9]  = new Array( '-' , 'o' , 'x' , 'o' , 'x' , 'o' , '-' , '-' , 'x' , '-' , '-' , 'x' , '-' );
+  GameMatrix[10] = new Array( 'x' , 'x' , '-' , 'x' , '-' , '-' , 'x' , 'x' , '-' , 'x' , '-' , '-' , '-' );
+  GameMatrix[11] = new Array( '-' , 'o' , 'x' , 'o' , 'x' , 'o' , '-' , '-' , 'x' , '-' , '-' , 'x' , '-' );
+  GameMatrix[12] = new Array( 'x' , 'x' , '-' , 'x' , '-' , '-' , 'x' , 'x' , '-' , 'x' , '-' , '-' , '-' );
+
+
+  function LevelCharToSpriteIndex(charData)
+  {
+     var level_obj;
+     switch (charData){
+            case 'x':
+                 level_obj = LEVEL_OBJ_BRICK;
+                 break;
+            case 'o':
+                 level_obj = LEVEL_OBJ_SOLID_WALL;
+                 break;
+            default:
+                 level_obj = LEVEL_OBJ_DEFAULT;
+     }  
+     return level_obj;
+  }
+
+
+  function LevelSpriteIndexFromFromPoint(x,y)
+  {
+    var cell_width  = 16;
+    var cell_height = 16;
+    
+    var object_cell_x, object_cell_y;
+    object_cell_x = parseInt(Math.floor(x / cell_width));
+    object_cell_y = parseInt(Math.floor(y / cell_height));
+    
+    return LevelCharToSpriteIndex(GameMatrix[object_cell_y][object_cell_x]);
+    
+  }
+
+  function initializePlayer() {
+     player1_object = new gameobject('player1_object', 'images/gamesprites_1.gif' ,0 ,0, 18, 24 ,0 ,0, true);
+     player1_object.addAnimation(player_up_anim    , 'player_up_anim');
+     player1_object.addAnimation(player_down_anim  , 'player_down_anim');
+     player1_object.addAnimation(player_left_anim  , 'player_left_anim');
+     player1_object.addAnimation(player_right_anim , 'player_right_anim');
+  }
+  
+  
+  
+  function initializeMap() {
+    var map_x_offset = 0;
+    var map_y_offset = 8;
+    var cell_width  = 16;
+    var cell_height = 16;
+    
+    var sprites_map = 'images/gamesprites_2.gif';
+    game_object = new gameobject('game_object', map_x_offset , map_y_offset, 16, 16, 0 , 0, false);
+    game_object.addAnimation( courtyard_frameset,'courtyard' );
+    
+    var level_obj;    
+    level_layout = new Array();
+    for (cnt=0; cnt<GameMatrix.length -1 ; cnt++)
+    {
+        level_layout[cnt] = new Array();
+        curr_y          = cell_height * cnt;
+        for (cnt2=0; cnt2<GameMatrix[cnt].length -1 ; cnt2++)
+        {
+            level_obj = LevelCharToSpriteIndex(GameMatrix[cnt][cnt2]);            
+            level_layout[cnt][cnt2] = new gameobject('map_object_'+cnt +'_'+cnt2
+                                  , sprites_map 
+                                  , map_x_offset+(cnt2*cell_width) , map_y_offset+(cnt*cell_height)
+                                  , 16, 16
+                                  , game_object.GetAnimationByID('courtyard').frames[level_obj].x 
+                                  , game_object.GetAnimationByID('courtyard').frames[level_obj].y, true
+                                  );
+        }  
+    }
+    
+
+  }
+   
+  function initializeGame() {
+    initializeMap();
+    initializePlayer();
+  }
+
+     </script>
+  </head>
+<body onload="initializeGame();">
+<table width="100%" height="100%">
+<tr>
+   <td valign=bottom><div id="debug"></div></td>
+</tr>
+</table>
+</body>
+</html>
+

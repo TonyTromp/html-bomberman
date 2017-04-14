@@ -1,0 +1,217 @@
+<html>
+  <head>
+     <meta name=vs_targetSchema content="http://schemas.microsoft.com/intellisense/ie5">
+     <SCRIPT language=JavaScript src="js/animation.js"></SCRIPT>
+     <SCRIPT language=JavaScript src="js/gameobject.js"></SCRIPT>
+
+<script language="Javascript">
+  if( document.captureEvents ) {
+    //non IE
+    if( Event.KEYDOWN ) {
+        //NS 4, NS 6+, Mozilla 0.9+
+        document.captureEvents( Event.KEYDOWN );
+    }
+  }
+  document.onkeydown = keyDown;
+
+
+  var player_up_anim    = new animation('player_up_anim');
+  var player_down_anim  = new animation('player_down_anim');
+  var player_left_anim  = new animation('player_down_anim');
+  var player_right_anim = new animation('player_down_anim');
+
+  /* Player up animation frames   */
+  player_up_anim.addFrame(95  , 0);
+  player_up_anim.addFrame(114 , 0);
+  player_up_anim.addFrame(133 , 0);
+  player_up_anim.addFrame(114 , 0);
+  player_up_anim.addFrame(95  , 0);
+  player_up_anim.addFrame(323 , 25);
+  player_up_anim.addFrame(304 , 25);
+  player_up_anim.addFrame(323 , 25);
+ 
+  /* Player down animation frames */
+  player_down_anim.addFrame(19 , 0);
+  player_down_anim.addFrame(38 , 0);
+  player_down_anim.addFrame(57 , 0);  
+  player_down_anim.addFrame(38 , 0);
+  player_down_anim.addFrame(19 , 0);  
+  player_down_anim.addFrame(399 , 25);
+  player_down_anim.addFrame(380 , 25);
+  player_down_anim.addFrame(399 , 25);
+  
+  /* Player left animation frames */
+  player_left_anim.addFrame(171 , 25);
+  player_left_anim.addFrame(190 , 25);
+  player_left_anim.addFrame(209 , 25);
+  player_left_anim.addFrame(190 , 25);
+  player_left_anim.addFrame(228 , 25);
+  player_left_anim.addFrame(247 , 25);
+  player_left_anim.addFrame(266 , 25);
+  player_left_anim.addFrame(247 , 25);
+  
+  /* Player right */
+  player_right_anim.addFrame(171 , 0);
+  player_right_anim.addFrame(190 , 0);
+  player_right_anim.addFrame(209 , 0);  
+  player_right_anim.addFrame(228 , 0);
+  player_right_anim.addFrame(247 , 0);
+  player_right_anim.addFrame(266 , 0);
+  
+  var player1_object = new gameobject('player1_object');
+
+  player1_object.addAnimation(player_up_anim    , 'player_up_anim');
+  player1_object.addAnimation(player_down_anim  , 'player_down_anim');
+  player1_object.addAnimation(player_left_anim  , 'player_left_anim');
+  player1_object.addAnimation(player_right_anim , 'player_right_anim');
+
+  /*
+  ** MyFunctions and classes
+  */
+  function slideElement(id, destX, destY, time) {
+     obj = document.getElementById(id);
+     obj.startX = obj.offsetLeft;
+     obj.startY = obj.offsetTop;
+     obj.destX = destX;
+     obj.destY = destY;
+     obj.time = time;
+     obj.tick = 0;
+     obj.timer = setInterval("slideElementUpdatePos('"+ id +"')", 40);
+  }
+
+  function slideElementUpdatePos(id) {
+     obj = document.getElementById(id);
+     obj.tick += 40;
+
+     if (obj.tick >= obj.time) {
+       obj.tick = obj.time;
+       clearInterval(obj.timer);
+       obj.timer = null;
+       this.afterMove();
+     }
+ 
+     var x = obj.destX - obj.startX;
+     var y = obj.destY - obj.startY;
+     var t = obj.tick / obj.time * Math.PI;
+     obj.style.left = obj.startX - 0.5 * x * Math.cos(t) + 0.5 * x + 'px';
+     obj.style.top  = obj.startY - 0.5 * y * Math.cos(t) + 0.5 * y + 'px';
+   }
+   
+   
+   /*
+   ** Keyboard event handler
+   */
+   function keyDown(keyPressed) 
+   {
+     // IE, Mozilla compatibility
+     var keyIndex = (keyPressed) ? keyPressed.which : event.keyCode; 
+     var letterpressed = String.fromCharCode(keyIndex).toLowerCase(); 
+     
+     var speed = 800;
+     var step_x = 20;
+     var step_y = 20;
+     
+     // If not currently moving 
+     var playerObject;
+     playerObject = document.getElementById('player1_element');
+     if (!playerObject.timer) {
+     switch(keyIndex){
+         case 39:
+         player1_object.GetAnimationByID('player_right_anim').Play('player1_element');
+         slideElement( playerObject.id , (playerObject.offsetLeft+step_x) , playerObject.offsetTop , speed);
+         break;
+     case 37: 
+         player1_object.GetAnimationByID('player_left_anim').Play('player1_element');
+         slideElement( playerObject.id , (playerObject.offsetLeft-step_x) , playerObject.offsetTop , speed);
+         break;
+     case 38:
+         player1_object.GetAnimationByID('player_up_anim').Play('player1_element');
+         slideElement( playerObject.id , playerObject.offsetLeft , (playerObject.offsetTop-step_y) , speed);
+         break;
+     case 40:
+         player1_object.GetAnimationByID('player_down_anim').Play('player1_element');
+         slideElement( playerObject.id , playerObject.offsetLeft , (playerObject.offsetTop+step_y) , speed);
+         break;
+     default:
+         break;
+     }
+     }
+
+    if (letterpressed == "h") 
+    {self.location.href="index.htm";} 
+   }
+   
+    /*
+    ** Other events
+    */
+    this.afterMove = window.event;
+    this.afterMove = event_afterMove;
+   function event_afterMove(e)
+   {
+      player1_object.StopAllAnimations('player1_element');
+   }
+   
+
+   /*
+   ** creates a new inline DIV element representing a game_element
+   **
+   ** within the DIV you specify the following objects
+   ** id                - (string) objectid for the element
+   ** url_spriteobject  - (string) url to sprite resource
+   **
+   ** x       - (int) x position to place the element
+   ** y       - (int) y position to place the element
+   ** width   - (int) width of the element
+   ** heigth  - (int) heigth of the element
+   ** cell_x  - (int) sprite cell x position
+   ** cell_y  - (int) sprite cell y position
+   ** visible - (boolean) determines if to show the image.
+   */
+   
+   function createGameElement(id , url_spriteobject , x , y , width, height , cell_x , cell_y , visible) {
+      var new_element = document.createElement('DIV');
+      new_element.setAttribute('id' , id);
+      document.body.appendChild(new_element);
+      
+      var game_element = document.getElementById(id);
+      
+      game_element.style.position = 'absolute';
+      game_element.style.width    = width  + 'px';
+      game_element.style.height   = height + 'px';
+      game_element.style.left     = x + 'px';
+      game_element.style.top      = y + 'px';
+      var pic1= new Image(100,25); 
+      pic1.src=url_spriteobject; 
+
+      if (url_spriteobject) game_element.style.backgroundImage     = 'url('+ url_spriteobject +')';      
+      if (cell_x | cell_y)  game_element.style.backgroundPosition  = '-'+ cell_x +'px '+ cell_y +'px';
+      if (visible==false) { 
+        game_element.style.visibility = 'Hidden' 
+      } else {
+        game_element.style.visibility = 'Visible' 
+      }
+   }
+   
+   
+   function initializeGame() {
+      createGameElement('player1_element' ,'images/gamesprites_1.gif' ,50 ,50, 18, 24 ,0 ,0, true);      
+   }
+
+     </script>
+  </head>
+<body onload="initializeGame();">
+  <a href="Javascript:player1_object.GetAnimationByID('player_up_anim').Play('player1_element');">Up</a>
+| <a href="Javascript:player1_object.GetAnimationByID('player_down_anim').Play('player1_element');">Down</a>
+| <a href="Javascript:player1_object.GetAnimationByID('player_left_anim').Play('player1_element');">Left</a>
+| <a href="Javascript:player1_object.GetAnimationByID('player_right_anim').Play('player1_element');">Right</a>
+
+<br>
+
+<p>
+<br><a href="Javascript:slideElement('player1_element' , 50,50, 200);">slide</a>
+</p>
+
+
+</body>
+</html>
+
